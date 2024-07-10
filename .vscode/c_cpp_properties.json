@@ -8,12 +8,12 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/include",
-                "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/src",
-                "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266mDNS/src",
+                "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/include",
+                "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WebServer/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
-                "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/.pio/libdeps/nodemcuv2/PubSubClient/src",
+                "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/.pio/libdeps/nodemcuv2/ESPAsyncTCP/src",
+                "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/.pio/libdeps/nodemcuv2/PubSubClient/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
                 "/home/achraf/.platformio/packages/toolchain-xtensa/include",
@@ -31,6 +31,7 @@
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266SdFat/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFiMesh/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266httpUpdate/src",
+                "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266mDNS/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/Ethernet/src",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/FSTools",
                 "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/GDBStub/src",
@@ -58,12 +59,12 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/include",
-                    "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/src",
-                    "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266mDNS/src",
+                    "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/include",
+                    "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WebServer/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFi/src",
-                    "/home/achraf/Documents/PlatformIO/Projects/240220-144627-arduino-webserver/.pio/libdeps/nodemcuv2/PubSubClient/src",
+                    "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/.pio/libdeps/nodemcuv2/ESPAsyncTCP/src",
+                    "/home/achraf/Documents/PlatformIO/Projects/Esp32_iot_controller/.pio/libdeps/nodemcuv2/PubSubClient/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
                     "/home/achraf/.platformio/packages/toolchain-xtensa/include",
@@ -81,6 +82,7 @@
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266SdFat/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266WiFiMesh/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266httpUpdate/src",
+                    "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/ESP8266mDNS/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/Ethernet/src",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/FSTools",
                     "/home/achraf/.platformio/packages/framework-arduinoespressif8266/libraries/GDBStub/src",
@@ -107,7 +109,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60113",
+                "PLATFORMIO=60115",
                 "ESP8266",
                 "ARDUINO_ARCH_ESP8266",
                 "ARDUINO_ESP8266_NODEMCU_ESP12E",
