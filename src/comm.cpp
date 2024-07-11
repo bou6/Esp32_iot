@@ -1,5 +1,6 @@
 #include "comm.h"
 #include <ESP8266WiFi.h>
+#include <LittleFS.h>
 
 //#### to do if the connection to the wifi is succesfull then kill the server
 //#### store the user Id and password in the flash memory if first connection is Ok
@@ -11,7 +12,51 @@ const char* ap_password = "12345678";
 Comm* Comm::instance = nullptr;
 
 Comm::Comm() {
-  // Empty constructor
+  // Set the initial state
+  m_state = INIT;
+
+  //Start LittleFS
+  if(!LittleFS.begin()){
+    Serial.println("An Error has occurred while mounting LittleFS");
+    delay(1000);
+    return;
+  }
+  #if 0
+  String network, password; 
+  if (!read_saved_credentials(&network, &password))
+  {
+    Serial.println("No saved credentials found, Access point will be started");
+    ESP8266WebServer server(80);
+    
+    // Set up the Access Point
+    WiFi.softAP(ap_ssid, ap_password);
+    Serial.println();
+    Serial.print("Access Point \"");
+    Serial.print(ap_ssid);
+    Serial.println("\" started");
+    Serial.print("IP address:\t");
+    Serial.println(WiFi.softAPIP());
+
+    // Define the server routes
+    instance->server.on("/", HTTP_GET, handleRoot);
+    instance->server.on("/connect", HTTP_POST, handleConnect);
+
+    // Start the server
+    instance->server.begin();
+    Serial.println("Server started");
+  }
+  else
+  {
+    Serial.println("Saved credentials found, connecting to the network");
+    WiFi.begin(network.c_str(), password.c_str());
+    unsigned long startTime = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
+      delay(500);
+      Serial.print(".");
+    }
+    // if the connection fail
+  }
+  #endif
 }
 
 // Function to handle the connection attempt
@@ -38,6 +83,9 @@ void handleConnect() {
   if (WiFi.status() == WL_CONNECTED) {
     response += "Connected! IP address: ";
     response += WiFi.localIP().toString();
+    // set the network and the password
+    comm->set_network(network);
+    comm->set_password(password);
   } else {
     response += "Failed to connect.";
   }
@@ -66,28 +114,19 @@ void handleRoot() {
   instance->server.send(200, "text/html", html);
 }
 
+void Comm::set_network(String network)
+{
+  m_network = network;
+}
+
+void Comm::set_password(String password)
+{
+  m_password = password;
+}
+
 Comm* Comm::get_instance() {
-  if (instance == nullptr) {
+  if (instance == nullptr)
     instance = new Comm();
-    ESP8266WebServer server(80);
-    
-    // Set up the Access Point
-    WiFi.softAP(ap_ssid, ap_password);
-    Serial.println();
-    Serial.print("Access Point \"");
-    Serial.print(ap_ssid);
-    Serial.println("\" started");
-    Serial.print("IP address:\t");
-    Serial.println(WiFi.softAPIP());
-
-    // Define the server routes
-    instance->server.on("/", HTTP_GET, handleRoot);
-    instance->server.on("/connect", HTTP_POST, handleConnect);
-
-    // Start the server
-    instance->server.begin();
-    Serial.println("Server started");
-  }
   return instance;
 }
 
@@ -95,7 +134,158 @@ bool Comm::is_connected() {
   return WiFi.status() == WL_CONNECTED;
 }
 
-void Comm::try_connect()
+String Comm::comm_state_to_string(Comm::State state)
 {
-  server.handleClient();
+  switch (state)
+  {
+    case Comm::INIT:
+      return "INIT";
+    case Comm::AP_STARTED:
+      return "AP_STARTED";
+    case Comm::CONNECTING:
+      return "CONNECTING";
+    case Comm::CONNECTED:
+      return "CONNECTED";   
+  }
+  return "UNKNOWN";
+}
+
+void Comm::comm_state_transition(State new_state)
+{
+  Serial.println("Transition from " + comm_state_to_string(m_state) + " to " + comm_state_to_string(new_state));
+  m_state = new_state;
+}
+
+void Comm::comm_state_machine()
+{
+  unsigned long startTime;
+  
+  switch (m_state)
+  {
+    case INIT:
+      if (read_saved_credentials(&m_network, &m_password))
+      {
+        // try to connect to the network
+        WiFi.begin(m_network.c_str(), m_password.c_str());
+        comm_state_transition(CONNECTING);
+      }
+      else
+      {
+        // Set up the Access Point
+        WiFi.softAP(ap_ssid, ap_password);
+        Serial.println();
+        Serial.print("Access Point \"");
+        Serial.print(ap_ssid);
+        Serial.println("\" started");
+        Serial.print("IP address:\t");
+        Serial.println(WiFi.softAPIP());
+    
+        // Define the server routes
+        instance->server.on("/", HTTP_GET, handleRoot);
+        instance->server.on("/connect", HTTP_POST, handleConnect);
+    
+        // Start the server
+        instance->server.begin();
+        Serial.println("Server started");
+
+        // Transition to the AP_STARTED state
+        comm_state_transition(AP_STARTED);
+      }
+      break;
+    
+    case AP_STARTED:
+      server.handleClient();
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        // store the password and the network name
+        save_credentials(m_network, m_password);
+
+        // Stop the server
+        server.stop();
+        comm_state_transition(CONNECTED);
+      }
+    break;
+    
+    case CONNECTING:
+      // Wait for connection (10 seconds timeout)
+      startTime = millis();
+      while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) 
+      {
+        delay(500);
+        Serial.print(".");
+      }
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        // store the password and the network name
+        save_credentials(m_network, m_password);
+        comm_state_transition(CONNECTED);
+      }
+      else if (WiFi.status() == WL_DISCONNECTED)
+      {
+        //delete the saved credentials
+        delete_credentials();
+        comm_state_transition(INIT);
+      }
+      break;
+    
+    case CONNECTED:
+    break;
+  }
+}
+
+Comm::State Comm::get_state()
+{
+  return m_state;
+}
+
+bool Comm::read_saved_credentials(String* network, String* password)
+{
+  //Open the file
+  File file = LittleFS.open("/credentials.txt", "r");
+  if(!file){
+    Serial.println("Error opening file");
+    return false;
+  }
+  //Read the network and the password
+  *network = file.readStringUntil('\n');
+  *password = file.readStringUntil('\n');
+  //Close the file
+  file.close();
+  return true;
+
+}
+
+bool Comm::save_credentials(String network, String password)
+{
+   //Open the file 
+  File file = LittleFS.open("/credentials.txt", "w");
+  //save the network and the password
+  file.print(network);
+  file.print("\n");
+  file.print(password);
+  file.print("\n");
+  //Close the file
+  file.close();
+  // check if the file is saved
+  if(!file){
+    Serial.println("Error saving file");
+    return false;
+  }
+  Serial.println("Write successful");
+  return true;
+}
+
+bool Comm::delete_credentials()
+{
+  //Open the file
+  File file = LittleFS.open("/credentials.txt", "r");
+  if(!file){
+    Serial.println("Error opening file");
+    return false;
+  }
+  //Delete the file
+  LittleFS.remove("/credentials.txt");
+  //Close the file
+  file.close();
+  return true;
 }
