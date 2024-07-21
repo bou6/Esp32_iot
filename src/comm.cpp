@@ -21,42 +21,6 @@ Comm::Comm() {
     delay(1000);
     return;
   }
-  #if 0
-  String network, password; 
-  if (!read_saved_credentials(&network, &password))
-  {
-    Serial.println("No saved credentials found, Access point will be started");
-    ESP8266WebServer server(80);
-    
-    // Set up the Access Point
-    WiFi.softAP(ap_ssid, ap_password);
-    Serial.println();
-    Serial.print("Access Point \"");
-    Serial.print(ap_ssid);
-    Serial.println("\" started");
-    Serial.print("IP address:\t");
-    Serial.println(WiFi.softAPIP());
-
-    // Define the server routes
-    instance->server.on("/", HTTP_GET, handleRoot);
-    instance->server.on("/connect", HTTP_POST, handleConnect);
-
-    // Start the server
-    instance->server.begin();
-    Serial.println("Server started");
-  }
-  else
-  {
-    Serial.println("Saved credentials found, connecting to the network");
-    WiFi.begin(network.c_str(), password.c_str());
-    unsigned long startTime = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
-      delay(500);
-      Serial.print(".");
-    }
-    // if the connection fail
-  }
-  #endif
 }
 
 // Function to handle the connection attempt
@@ -128,10 +92,6 @@ Comm* Comm::get_instance() {
   if (instance == nullptr)
     instance = new Comm();
   return instance;
-}
-
-bool Comm::is_connected() {
-  return WiFi.status() == WL_CONNECTED;
 }
 
 String Comm::comm_state_to_string(Comm::State state)
@@ -229,6 +189,7 @@ void Comm::comm_state_machine()
       break;
     
     case CONNECTED:
+      /* ##ToDo handle the case where the connection is lost */
     break;
   }
 }
