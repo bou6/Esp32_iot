@@ -169,7 +169,7 @@ void Comm::comm_state_machine()
     case CONNECTING:
       // Wait for connection (10 seconds timeout)
       startTime = millis();
-      while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) 
+      while (WiFi.status() != WL_CONNECTED && millis() - startTime < 1000) 
       {
         delay(500);
         Serial.print(".");

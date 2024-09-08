@@ -1,4 +1,5 @@
 #include "mqtt_handler.h"
+#include "config.h"
 #include <ESP8266WiFi.h>
 #include <time.h>
 #include <TZ.h>
@@ -42,11 +43,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     if (0==strcmp(data,"water on"))
     {
-      digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(WATER_CTRL_PIN, HIGH);
     }
     else if (0==strcmp(data,"water off"))
     {
-      digitalWrite(LED_BUILTIN, HIGH);
+      digitalWrite(WATER_CTRL_PIN, LOW);
     }
     else
     {
